@@ -1,0 +1,20 @@
+{
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "first_name": "John",
+    "last_name": "Doe",
+    "date_of_birth": "1965-03-15",
+    "status": "active",
+    "location": {
+        "latitude": 41.0082,
+        "longitude": 28.9784,
+        "accuracy": 10.5,
+        "address": "123 Health Street, Istanbul, Turkey"
+    },
+    "emergency_contact": {
+        "name": "Jane Doe",
+        "phone": "+905551234567"
+    },
+    "medical_notes": "Type 2 diabetes, hypertension. Regular monitoring required.",
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-02-08T12:00:00Z"
+}

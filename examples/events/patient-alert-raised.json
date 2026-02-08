@@ -1,0 +1,30 @@
+{
+    "event_name": "patient.alert.raised",
+    "event_version": "1.0.0",
+    "event_id": "9b8e7f6d-5c4a-3b2e-1d0c-9f8e7d6c5b4a",
+    "timestamp": "2026-02-08T12:35:00Z",
+    "payload": {
+        "alert": {
+            "id": "alert-123e4567-e89b-12d3-a456-426614174000",
+            "patient_id": "550e8400-e29b-41d4-a716-446655440000",
+            "severity": "high",
+            "type": "vitals_abnormal",
+            "message": "Heart rate above threshold: 165 bpm detected",
+            "status": "open",
+            "vitals_snapshot": {
+                "id": "vitals-snapshot-001",
+                "patient_id": "550e8400-e29b-41d4-a716-446655440000",
+                "recorded_at": "2026-02-08T12:35:00Z",
+                "heart_rate": 165,
+                "blood_pressure": {
+                    "systolic": 180,
+                    "diastolic": 95
+                },
+                "temperature": 37.2,
+                "oxygen_saturation": 92,
+                "device_id": "wearable-001"
+            },
+            "created_at": "2026-02-08T12:35:00Z"
+        }
+    }
+}

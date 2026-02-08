@@ -1,0 +1,718 @@
+openapi: 3.0.3
+info:
+  title: 5G Health Platform Gateway API
+  version: 1.0.0
+  description: |
+    REST API for the 5G-enabled home healthcare and emergency response platform.
+    
+    **Authentication**: All endpoints require authentication handled by the API gateway.
+    Auth tokens must be included in the `Authorization` header as `Bearer <token>`.
+  contact:
+    name: Platform Architecture Team
+    email: platform@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.5g-health.example.com/v1
+    description: Production
+  - url: https://api-staging.5g-health.example.com/v1
+    description: Staging
+  - url: http://localhost:8080/v1
+    description: Local development
+
+tags:
+  - name: Patients
+    description: Patient management operations
+  - name: Vitals
+    description: Patient vital signs monitoring
+  - name: Alerts
+    description: Patient alert notifications
+  - name: Dispatch
+    description: Emergency dispatch operations
+
+paths:
+  /patients:
+    get:
+      operationId: listPatients
+      summary: List all patients
+      description: Retrieve a paginated list of all patients in the system.
+      tags:
+        - Patients
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of results to skip for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - total
+                  - limit
+                  - offset
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Patient'
+                  total:
+                    type: integer
+                    description: Total number of patients
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /patients/{id}:
+    get:
+      operationId: getPatient
+      summary: Get patient by ID
+      description: Retrieve detailed information about a specific patient.
+      tags:
+        - Patients
+      parameters:
+        - name: id
+          in: path
+          description: Patient unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /patients/{id}/vitals/latest:
+    get:
+      operationId: getLatestVitals
+      summary: Get latest vitals for patient
+      description: Retrieve the most recent vital signs measurement for a patient.
+      tags:
+        - Vitals
+      parameters:
+        - name: id
+          in: path
+          description: Patient unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vitals'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /patients/{id}/vitals:
+    get:
+      operationId: getVitalsHistory
+      summary: Get vitals history for patient
+      description: Retrieve historical vital signs measurements for a patient within a time range.
+      tags:
+        - Vitals
+      parameters:
+        - name: id
+          in: path
+          description: Patient unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          description: Start timestamp (ISO 8601 format, UTC)
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: '2026-02-01T00:00:00Z'
+        - name: to
+          in: query
+          description: End timestamp (ISO 8601 format, UTC)
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: '2026-02-08T23:59:59Z'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - patient_id
+                  - data
+                  - count
+                properties:
+                  patient_id:
+                    type: string
+                    format: uuid
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Vitals'
+                  count:
+                    type: integer
+                    description: Number of vitals records returned
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      summary: List alerts
+      description: Retrieve alerts, optionally filtered by patient ID.
+      tags:
+        - Alerts
+      parameters:
+        - name: patient_id
+          in: query
+          description: Filter alerts by patient ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of results to skip for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - total
+                  - limit
+                  - offset
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alert'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /dispatch:
+    post:
+      operationId: createDispatch
+      summary: Create emergency dispatch
+      description: Create a new emergency dispatch request.
+      tags:
+        - Dispatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - patient_id
+                - alert_id
+                - priority
+              properties:
+                patient_id:
+                  type: string
+                  format: uuid
+                  description: Patient requiring emergency response
+                alert_id:
+                  type: string
+                  format: uuid
+                  description: Alert that triggered the dispatch
+                priority:
+                  type: string
+                  enum:
+                    - critical
+                    - high
+                    - medium
+                    - low
+                  description: Dispatch priority level
+                notes:
+                  type: string
+                  description: Additional notes for responders
+                  maxLength: 1000
+      responses:
+        '201':
+          description: Dispatch created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dispatch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /dispatch/{id}/assign:
+    post:
+      operationId: assignDispatch
+      summary: Assign dispatch to responder
+      description: Assign an emergency dispatch to a specific responder.
+      tags:
+        - Dispatch
+      parameters:
+        - name: id
+          in: path
+          description: Dispatch unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - responder_id
+              properties:
+                responder_id:
+                  type: string
+                  format: uuid
+                  description: ID of the responder assigned to this dispatch
+                estimated_arrival:
+                  type: string
+                  format: date-time
+                  description: Estimated arrival time (ISO 8601, UTC)
+      responses:
+        '200':
+          description: Dispatch assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dispatch'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    Patient:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - date_of_birth
+        - status
+        - location
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Patient unique identifier
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        date_of_birth:
+          type: string
+          format: date
+          description: Patient date of birth (YYYY-MM-DD)
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - critical
+          description: Current patient status
+        location:
+          $ref: '#/components/schemas/Location'
+        emergency_contact:
+          type: object
+          properties:
+            name:
+              type: string
+              maxLength: 200
+            phone:
+              type: string
+              pattern: '^\+?[1-9]\d{1,14}$'
+              description: E.164 format phone number
+        medical_notes:
+          type: string
+          maxLength: 2000
+          description: Medical history and notes
+        created_at:
+          type: string
+          format: date-time
+          description: Record creation timestamp (ISO 8601, UTC)
+        updated_at:
+          type: string
+          format: date-time
+          description: Record last update timestamp (ISO 8601, UTC)
+
+    Vitals:
+      type: object
+      required:
+        - id
+        - patient_id
+        - recorded_at
+        - heart_rate
+        - blood_pressure
+        - temperature
+        - oxygen_saturation
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Vitals record unique identifier
+        patient_id:
+          type: string
+          format: uuid
+          description: Associated patient ID
+        recorded_at:
+          type: string
+          format: date-time
+          description: Timestamp when vitals were recorded (ISO 8601, UTC)
+        heart_rate:
+          type: integer
+          minimum: 0
+          maximum: 300
+          description: Heart rate in beats per minute (bpm)
+        blood_pressure:
+          type: object
+          required:
+            - systolic
+            - diastolic
+          properties:
+            systolic:
+              type: integer
+              minimum: 0
+              maximum: 300
+              description: Systolic pressure in mmHg
+            diastolic:
+              type: integer
+              minimum: 0
+              maximum: 200
+              description: Diastolic pressure in mmHg
+        temperature:
+          type: number
+          format: float
+          minimum: 30.0
+          maximum: 45.0
+          description: Body temperature in Celsius
+        oxygen_saturation:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Blood oxygen saturation percentage (SpO2)
+        device_id:
+          type: string
+          description: ID of the monitoring device
+
+    Alert:
+      type: object
+      required:
+        - id
+        - patient_id
+        - severity
+        - type
+        - message
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Alert unique identifier
+        patient_id:
+          type: string
+          format: uuid
+          description: Patient who triggered the alert
+        severity:
+          type: string
+          enum:
+            - critical
+            - high
+            - medium
+            - low
+          description: Alert severity level
+        type:
+          type: string
+          enum:
+            - vitals_abnormal
+            - fall_detected
+            - sos_triggered
+            - device_offline
+            - medication_missed
+          description: Type of alert
+        message:
+          type: string
+          maxLength: 500
+          description: Human-readable alert message
+        status:
+          type: string
+          enum:
+            - open
+            - acknowledged
+            - resolved
+            - dismissed
+          description: Current alert status
+        vitals_snapshot:
+          $ref: '#/components/schemas/Vitals'
+          description: Vitals at the time of alert (if applicable)
+        created_at:
+          type: string
+          format: date-time
+          description: Alert creation timestamp (ISO 8601, UTC)
+        acknowledged_at:
+          type: string
+          format: date-time
+          description: Alert acknowledgment timestamp (ISO 8601, UTC)
+        resolved_at:
+          type: string
+          format: date-time
+          description: Alert resolution timestamp (ISO 8601, UTC)
+
+    Dispatch:
+      type: object
+      required:
+        - id
+        - patient_id
+        - alert_id
+        - priority
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Dispatch unique identifier
+        patient_id:
+          type: string
+          format: uuid
+          description: Patient requiring emergency response
+        alert_id:
+          type: string
+          format: uuid
+          description: Alert that triggered the dispatch
+        priority:
+          type: string
+          enum:
+            - critical
+            - high
+            - medium
+            - low
+          description: Dispatch priority level
+        status:
+          type: string
+          enum:
+            - pending
+            - assigned
+            - en_route
+            - arrived
+            - completed
+            - cancelled
+          description: Current dispatch status
+        responder_id:
+          type: string
+          format: uuid
+          description: Assigned responder ID
+        estimated_arrival:
+          type: string
+          format: date-time
+          description: Estimated arrival time (ISO 8601, UTC)
+        actual_arrival:
+          type: string
+          format: date-time
+          description: Actual arrival time (ISO 8601, UTC)
+        notes:
+          type: string
+          maxLength: 1000
+          description: Additional notes for responders
+        created_at:
+          type: string
+          format: date-time
+          description: Dispatch creation timestamp (ISO 8601, UTC)
+        updated_at:
+          type: string
+          format: date-time
+          description: Dispatch last update timestamp (ISO 8601, UTC)
+
+    Location:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          description: Latitude coordinate (WGS84)
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          description: Longitude coordinate (WGS84)
+        altitude:
+          type: number
+          format: double
+          description: Altitude in meters
+        accuracy:
+          type: number
+          format: double
+          minimum: 0
+          description: Position accuracy in meters
+        address:
+          type: string
+          maxLength: 500
+          description: Human-readable address
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 'BAD_REQUEST'
+            message: 'Invalid request parameters'
+
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 'UNAUTHORIZED'
+            message: 'Authentication required'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 'NOT_FOUND'
+            message: 'Requested resource not found'
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 'INTERNAL_ERROR'
+            message: 'An internal error occurred'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication
+
+security:
+  - BearerAuth: []

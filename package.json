@@ -1,0 +1,33 @@
+{
+    "name": "5g-health-platform-contracts",
+    "version": "1.0.0",
+    "description": "API and event contracts for the 5G-enabled home healthcare and emergency response platform",
+    "main": "index.js",
+    "scripts": {
+        "validate:openapi": "spectral lint openapi/**/*.yaml --ruleset .spectral.yaml",
+        "validate:asyncapi": "asyncapi validate asyncapi/**/*.yaml",
+        "validate:schemas": "node scripts/validate-schemas.js",
+        "validate": "npm run validate:openapi && npm run validate:asyncapi && npm run validate:schemas",
+        "test": "npm run validate"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/your-org/5g-health-platform-contracts.git"
+    },
+    "keywords": [
+        "api",
+        "contracts",
+        "openapi",
+        "asyncapi",
+        "5g",
+        "healthcare"
+    ],
+    "author": "Platform Architecture Team",
+    "license": "MIT",
+    "devDependencies": {
+        "@asyncapi/cli": "^1.35.5",
+        "@stoplight/spectral-cli": "^6.13.1",
+        "ajv": "^8.17.1",
+        "ajv-formats": "^3.0.1"
+    }
+}

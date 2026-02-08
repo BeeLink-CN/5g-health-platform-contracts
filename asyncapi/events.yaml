@@ -1,0 +1,253 @@
+asyncapi: 2.6.0
+
+info:
+  title: 5G Health Platform Events
+  version: 1.0.0
+  description: |
+    Real-time event contracts for the 5G-enabled home healthcare and emergency response platform.
+    
+    All events use a standardized envelope with event metadata (name, version, ID, timestamp)
+    and a typed payload.
+    
+    **Note**: The channel/topic names shown here are examples for MQTT. Actual transport-level
+    topics may vary by message broker implementation. The `event_name` field in the payload
+    is the canonical event identifier for routing and processing.
+  contact:
+    name: Platform Architecture Team
+    email: platform@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  production:
+    url: mqtt://events.5g-health.example.com:1883
+    protocol: mqtt
+    description: Production event broker (MQTT)
+  staging:
+    url: mqtt://events-staging.5g-health.example.com:1883
+    protocol: mqtt
+    description: Staging event broker (MQTT)
+
+channels:
+  vitals/recorded:
+    description: Channel for vital signs recording events
+    subscribe:
+      summary: Subscribe to vitals recording events
+      operationId: onVitalsRecorded
+      message:
+        $ref: '#/components/messages/VitalsRecorded'
+
+  patient/alert/raised:
+    description: Channel for patient alert events
+    subscribe:
+      summary: Subscribe to patient alert events
+      operationId: onPatientAlertRaised
+      message:
+        $ref: '#/components/messages/PatientAlertRaised'
+
+  dispatch/created:
+    description: Channel for dispatch creation events
+    subscribe:
+      summary: Subscribe to dispatch creation events
+      operationId: onDispatchCreated
+      message:
+        $ref: '#/components/messages/DispatchCreated'
+
+  dispatch/assigned:
+    description: Channel for dispatch assignment events
+    subscribe:
+      summary: Subscribe to dispatch assignment events
+      operationId: onDispatchAssigned
+      message:
+        $ref: '#/components/messages/DispatchAssigned'
+
+components:
+  messages:
+    VitalsRecorded:
+      name: vitals.recorded
+      title: Vitals Recorded
+      summary: Published when patient vitals are recorded
+      contentType: application/json
+      payload:
+        $ref: '../schemas/events/vitals-recorded.json'
+
+    PatientAlertRaised:
+      name: patient.alert.raised
+      title: Patient Alert Raised
+      summary: Published when a patient alert is triggered
+      contentType: application/json
+      payload:
+        $ref: '../schemas/events/patient-alert-raised.json'
+
+    DispatchCreated:
+      name: dispatch.created
+      title: Dispatch Created
+      summary: Published when an emergency dispatch is created
+      contentType: application/json
+      payload:
+        $ref: '../schemas/events/dispatch-created.json'
+
+    DispatchAssigned:
+      name: dispatch.assigned
+      title: Dispatch Assigned
+      summary: Published when a dispatch is assigned to a responder
+      contentType: application/json
+      payload:
+        $ref: '../schemas/events/dispatch-assigned.json'
+
+  schemas:
+    VitalsRecordedEvent:
+      type: object
+      required:
+        - event_name
+        - event_version
+        - event_id
+        - timestamp
+        - payload
+      properties:
+        event_name:
+          type: string
+          const: vitals.recorded
+          description: Event type identifier
+        event_version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: '1.0.0'
+          description: Semantic version of this event schema
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this event instance
+        timestamp:
+          type: string
+          format: date-time
+          description: Event occurrence timestamp (ISO 8601, UTC)
+        payload:
+          type: object
+          required:
+            - patient_id
+            - vitals
+          properties:
+            patient_id:
+              type: string
+              format: uuid
+              description: ID of the patient whose vitals were recorded
+            vitals:
+              $ref: '../schemas/domain/vitals.json'
+              description: The recorded vital signs
+
+    PatientAlertRaisedEvent:
+      type: object
+      required:
+        - event_name
+        - event_version
+        - event_id
+        - timestamp
+        - payload
+      properties:
+        event_name:
+          type: string
+          const: patient.alert.raised
+          description: Event type identifier
+        event_version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: '1.0.0'
+          description: Semantic version of this event schema
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this event instance
+        timestamp:
+          type: string
+          format: date-time
+          description: Event occurrence timestamp (ISO 8601, UTC)
+        payload:
+          type: object
+          required:
+            - alert
+          properties:
+            alert:
+              $ref: '../schemas/domain/alert.json'
+              description: The alert that was raised
+
+    DispatchCreatedEvent:
+      type: object
+      required:
+        - event_name
+        - event_version
+        - event_id
+        - timestamp
+        - payload
+      properties:
+        event_name:
+          type: string
+          const: dispatch.created
+          description: Event type identifier
+        event_version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: '1.0.0'
+          description: Semantic version of this event schema
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this event instance
+        timestamp:
+          type: string
+          format: date-time
+          description: Event occurrence timestamp (ISO 8601, UTC)
+        payload:
+          type: object
+          required:
+            - dispatch
+          properties:
+            dispatch:
+              $ref: '../schemas/domain/dispatch.json'
+              description: The dispatch that was created
+
+    DispatchAssignedEvent:
+      type: object
+      required:
+        - event_name
+        - event_version
+        - event_id
+        - timestamp
+        - payload
+      properties:
+        event_name:
+          type: string
+          const: dispatch.assigned
+          description: Event type identifier
+        event_version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: '1.0.0'
+          description: Semantic version of this event schema
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this event instance
+        timestamp:
+          type: string
+          format: date-time
+          description: Event occurrence timestamp (ISO 8601, UTC)
+        payload:
+          type: object
+          required:
+            - dispatch_id
+            - responder_id
+          properties:
+            dispatch_id:
+              type: string
+              format: uuid
+              description: ID of the dispatch being assigned
+            responder_id:
+              type: string
+              format: uuid
+              description: ID of the responder assigned
+            estimated_arrival:
+              type: string
+              format: date-time
+              description: Estimated arrival time (ISO 8601, UTC)

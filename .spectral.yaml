@@ -1,0 +1,29 @@
+extends: spectral:oas
+rules:
+  # Ensure all operations have tags
+  operation-tags: error
+  
+  # Ensure all operations have operation IDs
+  operation-operationId: error
+  
+  # Ensure responses have descriptions
+  operation-description: warn
+  
+  # Ensure all parameters have descriptions
+  parameter-description: warn
+  
+  # Ensure all schemas have descriptions
+  schema-description: warn
+  
+  # Ensure examples are provided
+  operation-examples: warn
+  
+  # Custom rule: enforce snake_case for property names
+  property-names-snake-case:
+    description: Property names must use snake_case
+    severity: error
+    given: $.components.schemas..properties[*]~
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-z0-9_]*$"
