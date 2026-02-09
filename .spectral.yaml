@@ -10,7 +10,7 @@ rules:
   operation-description: warn
   
   # Ensure all parameters have descriptions
-  parameter-description: warn
+  operation-parameters: warn
   
   # Ensure all schemas have descriptions
   schema-description: warn
