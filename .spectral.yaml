@@ -16,7 +16,8 @@ rules:
   oas3-schema: warn
   
   # Ensure examples are provided
-  operation-examples: warn
+  oas3-valid-media-example: warn
+  oas3-valid-schema-example: warn
   
   # Custom rule: enforce snake_case for property names
   property-names-snake-case:
