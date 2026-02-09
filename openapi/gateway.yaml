@@ -537,7 +537,8 @@ components:
             - dismissed
           description: Current alert status
         vitals_snapshot:
-          $ref: '#/components/schemas/Vitals'
+          allOf:
+            - $ref: '#/components/schemas/Vitals'
           description: Vitals at the time of alert (if applicable)
         created_at:
           type: string
