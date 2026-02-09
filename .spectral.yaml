@@ -13,7 +13,7 @@ rules:
   operation-parameters: warn
   
   # Ensure all schemas have descriptions
-  oas3-schema-description: warn
+  oas3-schema: warn
   
   # Ensure examples are provided
   operation-examples: warn
