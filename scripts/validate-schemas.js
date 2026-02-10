@@ -1,4 +1,4 @@
-const Ajv = require('ajv');
+const Ajv = require('ajv/dist/2020');
 const addFormats = require('ajv-formats');
 const fs = require('fs');
 const path = require('path');
